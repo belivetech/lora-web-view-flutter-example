@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -38,7 +40,20 @@ class _WebViewScreenState extends State<WebViewScreen> {
             onPageStarted: (String url) {
               runJavaScript("window.appConfig = {'foo': 'bar'}");
             },
-          ));
+          ))
+          ..addJavaScriptChannel(
+            'LoraChannel',
+            onMessageReceived: (JavaScriptMessage message) {
+              Map<String, dynamic> jsonMap = json.decode(message.message);
+              if (!jsonMap.containsKey('eventName')) return;
+              switch (jsonMap['eventName'] as String) {
+                case 'player.READY':
+                  // Add your handler methods if needed
+                  debugPrint('Player is ready');
+                  break;
+              }
+            },
+          );
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
