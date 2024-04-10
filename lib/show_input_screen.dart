@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lora_web_view/webview_screen.dart';
+import 'package:lora_web_view/settings.dart' as settings;
 
 class ShowInputScreen extends StatefulWidget {
   const ShowInputScreen({super.key});
@@ -10,7 +11,7 @@ class ShowInputScreen extends StatefulWidget {
 
 class _ShowInputScreenState extends State<ShowInputScreen> {
   final TextEditingController _controller =
-      TextEditingController(text: 'b5ed4b45-9d2f-4f92-aabd-992fb189c0ff');
+      TextEditingController(text: settings.defaultShowId);
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -47,7 +48,7 @@ class _ShowInputScreenState extends State<ShowInputScreen> {
                         context,
                         WebViewScreen.routeName,
                         arguments: WebViewScreenArguments(
-                          'https://sdk-docs.belive.technology/lora-webview-embed/index.html',
+                          settings.webViewUrl,
                           enteredText,
                         ),
                       );
