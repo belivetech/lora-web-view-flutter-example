@@ -76,6 +76,27 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   showBottomSheet(
                       'Share view', 'Content share view... ${message.message}');
                   break;
+                case 'player.MINIMIZED':
+                  debugPrint('Player is MINIMIZED');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      duration: const Duration(seconds: 10),
+                      content: const Text('Player MINIMIZED'),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () =>
+                            runJavaScript('window.player.unminimize()'),
+                      ),
+                    ),
+                  );
+                  break;
+                case 'player.UNMINIMIZED':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Player UNMINIMIZED'),
+                    ),
+                  );
+                  break;
               }
             },
           );
