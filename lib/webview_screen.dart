@@ -40,6 +40,18 @@ class _WebViewScreenState extends State<WebViewScreen> {
     controller.loadRequest(Uri.parse(widget.url));
   }
 
+  @override
+  void deactivate() {
+    super.deactivate();
+    controller.reload();
+  }
+
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      controller.reload();
+    }
+  }
+
   WebViewController createWebViewController() {
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
@@ -69,10 +81,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   Navigator.pop(context);
                   break;
                 case 'player.SHOW_PRODUCT_VIEW':
+                  debugPrint('Player SHOW_PRODUCT_VIEW');
                   showBottomSheet('Product detail',
                       'Product detail view... ${message.message}');
                   break;
                 case 'player.SHOW_SHARE_VIEW':
+                  debugPrint('Player SHOW_SHARE_VIEW');
                   showBottomSheet(
                       'Share view', 'Content share view... ${message.message}');
                   break;
@@ -93,6 +107,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 case 'player.UNMINIMIZED':
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
+                      showCloseIcon: true,
                       content: Text('Player UNMINIMIZED'),
                     ),
                   );
@@ -126,12 +141,15 @@ class _WebViewScreenState extends State<WebViewScreen> {
             mainAxisSize: MainAxisSize.min, // To make the modal compact
             children: <Widget>[
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
                     title,
                     style: const TextStyle(
-                        fontSize: 18.0, fontWeight: FontWeight.bold),
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -155,8 +173,25 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: WebViewWidget(
-          controller: controller,
+        child: Stack(
+          children: [
+            WebViewWidget(
+              controller: controller,
+            ),
+            Positioned(
+              top: 8,
+              left: 8,
+              child: IconButton(
+                color: Colors.white,
+                icon: const Icon(
+                  Icons.arrow_back,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
