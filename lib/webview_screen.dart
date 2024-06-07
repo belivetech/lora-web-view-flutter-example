@@ -41,15 +41,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   @override
-  void deactivate() {
-    super.deactivate();
-    controller.reload();
-  }
-
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      controller.reload();
-    }
+  void dispose() {
+    controller.loadRequest(Uri.parse('about:blank'));
+    super.dispose();
   }
 
   WebViewController createWebViewController() {
@@ -78,6 +72,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   debugPrint('Player is ready');
                   break;
                 case 'player.CLOSE':
+                  debugPrint('Player CLOSED');
                   Navigator.pop(context);
                   break;
                 case 'player.SHOW_PRODUCT_VIEW':
