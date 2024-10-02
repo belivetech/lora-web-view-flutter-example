@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lora_web_view/product_detail_screen.dart';
 import 'package:lora_web_view/settings.dart' as settings;
-import 'package:lora_web_view/widgets/pip_wrapper.dart';
+import 'package:lora_web_view/webview_screen.dart';
 
 class ShowInputScreen extends StatefulWidget {
   const ShowInputScreen({super.key});
@@ -45,15 +45,15 @@ class _ShowInputScreenState extends State<ShowInputScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       String enteredText = _controller.text;
-                      PipWrapper.showUrl(context, enteredText);
-                      // Navigator.pushNamed(
-                      //   context,
-                      //   WebViewScreen.routeName,
-                      //   arguments: WebViewScreenArguments(
-                      //     settings.webViewUrl,
-                      //     enteredText,
-                      //   ),
-                      // );
+                      // PipWrapper.showUrl(context, enteredText);
+                      Navigator.pushNamed(
+                        context,
+                        WebViewScreen.routeName,
+                        arguments: WebViewScreenArguments(
+                          settings.webViewUrl,
+                          enteredText,
+                        ),
+                      );
                     }
                   },
                   child: const Text('Open Show'),

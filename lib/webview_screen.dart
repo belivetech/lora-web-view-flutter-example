@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
+import 'package:lora_web_view/main.dart';
 import 'package:lora_web_view/widgets/my_pip_webview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -122,25 +123,28 @@ class _WebViewScreenState extends State<WebViewScreen> {
       pipWindowWidth: 150,
     ));
     PictureInPicture.startPiP(
-      pipWidget: Builder(
-        builder: (context) {
-          return PiPWidget(
-            onPiPClose: () {},
-            child: MyPiPWebView(
-              url: widget.url,
-              showId: widget.showId,
-              shouldCallMinimize: true,
-              onExpanded: () {
-                print('>> context $context');
-          
-                Navigator.of(context)
-                    .pushNamed('product_detail');
-                PictureInPicture.stopPiP();
-              },
-            ),
-          );
-        }
-      ),
+      pipWidget: Builder(builder: (context) {
+        return PiPWidget(
+          onPiPClose: () {},
+          child: MyPiPWebView(
+            url: widget.url,
+            showId: widget.showId,
+            shouldCallMinimize: true,
+            onExpanded: () {
+              navigatorKey.currentState?.pushNamed(
+                WebViewScreen.routeName,
+                arguments: WebViewScreenArguments(
+                  widget.url,
+                  widget.showId,
+                ),
+              );
+              // Navigator.of(context)
+              //     .pushNamed('product_detail');
+              PictureInPicture.stopPiP();
+            },
+          ),
+        );
+      }),
     );
     Navigator.pop(context);
   }
