@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
+import 'package:lora_web_view/widgets/my_pip_webview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -87,17 +89,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   break;
                 case 'player.MINIMIZED':
                   debugPrint('Player is MINIMIZED');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 10),
-                      content: const Text('Player MINIMIZED'),
-                      action: SnackBarAction(
-                        label: 'Undo',
-                        onPressed: () =>
-                            runJavaScript('window.player.unminimize()'),
-                      ),
-                    ),
-                  );
+                  activePip(context);
                   break;
                 case 'player.UNMINIMIZED':
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +113,36 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   Future<void> runJavaScript(String javascript) {
     return controller.runJavaScript(javascript);
+  }
+
+  Future activePip(BuildContext context) async {
+    PictureInPicture.updatePiPParams(
+        pipParams: const PiPParams(
+      pipWindowHeight: 250,
+      pipWindowWidth: 150,
+    ));
+    PictureInPicture.startPiP(
+      pipWidget: Builder(
+        builder: (context) {
+          return PiPWidget(
+            onPiPClose: () {},
+            child: MyPiPWebView(
+              url: widget.url,
+              showId: widget.showId,
+              shouldCallMinimize: true,
+              onExpanded: () {
+                print('>> context $context');
+          
+                Navigator.of(context)
+                    .pushNamed('product_detail');
+                PictureInPicture.stopPiP();
+              },
+            ),
+          );
+        }
+      ),
+    );
+    Navigator.pop(context);
   }
 
   void showBottomSheet(String title, String content) {
@@ -156,6 +178,15 @@ class _WebViewScreenState extends State<WebViewScreen> {
               ),
               const SizedBox(height: 10.0),
               Text(content),
+              TextButton(
+                  onPressed: () async {
+                    await activePip(context);
+                    if (context.mounted) {
+                      Navigator.of(context)
+                          .pushReplacementNamed('product_detail');
+                    }
+                  },
+                  child: const Text('Open Product detail')),
             ],
           ),
         );
@@ -165,30 +196,32 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            WebViewWidget(
-              controller: controller,
-            ),
-            Positioned(
-              top: 8,
-              left: 8,
-              child: IconButton(
-                color: Colors.white,
-                icon: const Icon(
-                  Icons.arrow_back,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+    return Builder(builder: (context) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(
+                controller: controller,
               ),
-            ),
-          ],
+              Positioned(
+                top: 8,
+                left: 8,
+                child: IconButton(
+                  color: Colors.white,
+                  icon: const Icon(
+                    Icons.arrow_back,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
