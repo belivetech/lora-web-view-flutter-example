@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:lora_web_view/main.dart';
+import 'package:lora_web_view/screens/product_detail_screen.dart';
 import 'package:lora_web_view/widgets/my_pip_webview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -21,6 +22,7 @@ class WebViewScreen extends StatefulWidget {
     required this.url,
     required this.showId,
     this.isLoadFromAssets = false,
+    this.isMinimized = false,
   });
 
   static const routeName = '/show';
@@ -28,6 +30,7 @@ class WebViewScreen extends StatefulWidget {
   final String url;
   final String showId;
   final bool isLoadFromAssets;
+  final bool isMinimized;
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
@@ -67,30 +70,44 @@ class _WebViewScreenState extends State<WebViewScreen> {
             onMessageReceived: (JavaScriptMessage message) {
               Map<String, dynamic> jsonMap = json.decode(message.message);
               if (!jsonMap.containsKey('eventName')) return;
+
+              final payload = jsonMap.containsKey('payload')
+                  ? jsonMap['payload'] as Map<String, dynamic>
+                  : null;
+
               switch (jsonMap['eventName'] as String) {
                 case 'player.INITIALIZE':
                   runJavaScript('window.player.open("${widget.showId}")');
                   break;
                 case 'player.READY':
-                  debugPrint('Player is ready');
+                  if (widget.isMinimized) {
+                    runJavaScript('window.player.minimize()');
+                  }
                   break;
                 case 'player.CLOSE':
-                  debugPrint('Player CLOSED');
                   Navigator.pop(context);
                   break;
                 case 'player.SHOW_PRODUCT_VIEW':
-                  debugPrint('Player SHOW_PRODUCT_VIEW');
-                  showBottomSheet('Product detail',
-                      'Product detail view... ${message.message}');
+                  debugPrint(message.message);
+                  activePip(context);
+                  Navigator.pushNamed(
+                    context,
+                    ProductDetailScreen.routeName,
+                    arguments: ProductDetailScreenArguments(
+                      sku: payload?['sku'] ?? "null",
+                      title: payload?['name'] as String,
+                      description: json.encode(payload),
+                    ),
+                  );
                   break;
                 case 'player.SHOW_SHARE_VIEW':
-                  debugPrint('Player SHOW_SHARE_VIEW');
                   showBottomSheet(
                       'Share view', 'Content share view... ${message.message}');
                   break;
                 case 'player.MINIMIZED':
-                  debugPrint('Player is MINIMIZED');
-                  activePip(context);
+                  if (!widget.isMinimized) {
+                    activePip(context);
+                  }
                   break;
                 case 'player.UNMINIMIZED':
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +146,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
           child: MyPiPWebView(
             url: widget.url,
             showId: widget.showId,
-            shouldCallMinimize: true,
             onExpanded: () {
               navigatorKey.currentState?.pushNamed(
                 WebViewScreen.routeName,
@@ -151,6 +167,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   void showBottomSheet(String title, String content) {
     final deviceHeight = MediaQuery.of(context).size.height * 0.7;
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -182,15 +199,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
               ),
               const SizedBox(height: 10.0),
               Text(content),
-              TextButton(
-                  onPressed: () async {
-                    await activePip(context);
-                    if (context.mounted) {
-                      Navigator.of(context)
-                          .pushReplacementNamed('product_detail');
-                    }
-                  },
-                  child: const Text('Open Product detail')),
             ],
           ),
         );
@@ -209,19 +217,20 @@ class _WebViewScreenState extends State<WebViewScreen> {
               WebViewWidget(
                 controller: controller,
               ),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: IconButton(
-                  color: Colors.white,
-                  icon: const Icon(
-                    Icons.arrow_back,
+              if (!widget.isMinimized)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: IconButton(
+                    color: Colors.white,
+                    icon: const Icon(
+                      Icons.arrow_back,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
                 ),
-              ),
             ],
           ),
         ),

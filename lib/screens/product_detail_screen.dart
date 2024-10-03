@@ -1,7 +1,29 @@
 import 'package:flutter/material.dart';
 
+class ProductDetailScreenArguments {
+  final String sku;
+  final String title;
+  final String? description;
+
+  ProductDetailScreenArguments({
+    required this.sku,
+    required this.title,
+    this.description,
+  });
+}
+
 class ProductDetailScreen extends StatelessWidget {
-  const ProductDetailScreen({super.key});
+  const ProductDetailScreen({
+    super.key,
+    required this.sku,
+    required this.title,
+    this.description,
+  });
+
+  static const routeName = '/product-detail';
+  final String sku;
+  final String title;
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +33,7 @@ class ProductDetailScreen extends StatelessWidget {
         slivers: [
           SliverAppBar.large(
             title: Text(
-              'Product title',
+              title,
               style: theme.textTheme.titleMedium,
             ),
           ),
@@ -27,19 +49,7 @@ class ProductDetailScreen extends StatelessWidget {
           SliverList.list(children: [
             const SizedBox(height: 8),
             Text(
-              'Product description',
-              style: theme.textTheme.bodySmall,
-            ),
-            Text(
-              'Product description',
-              style: theme.textTheme.bodySmall,
-            ),
-            Text(
-              'Product description',
-              style: theme.textTheme.bodySmall,
-            ),
-            Text(
-              'Product description',
+              description ?? "Product Description",
               style: theme.textTheme.bodySmall,
             ),
           ]),
