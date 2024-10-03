@@ -13,7 +13,10 @@ dependencies:
   webview_flutter: ^4.4.2
   webview_flutter_android: ^3.13.0
   webview_flutter_wkwebview: ^3.9.4
-
+  flutter_in_app_pip: ^1.7.4
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
