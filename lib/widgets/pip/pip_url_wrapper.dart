@@ -5,6 +5,7 @@ import 'package:lora_web_view/main.dart';
 import 'package:lora_web_view/screens/product_detail_screen.dart';
 import 'package:lora_web_view/widgets/pip/pip_container.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class PipUrlWrapper extends StatefulWidget {
@@ -132,6 +133,11 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
           }
         },
       );
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
     _controller = controller;
   }
 
@@ -232,8 +238,9 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
 
   Widget _buildWebView(BuildContext context) {
     return SafeArea(
-        child: WebViewWidget(
-      controller: _controller,
-    ));
+      child: WebViewWidget(
+        controller: _controller,
+      ),
+    );
   }
 }
