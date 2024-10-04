@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lora_web_view/settings.dart' as settings;
-import 'package:lora_web_view/screens/webview_screen.dart';
+import 'package:lora_web_view/widgets/pip/pip_app.dart';
 
 class ShowInputScreen extends StatefulWidget {
   const ShowInputScreen({super.key});
@@ -44,14 +44,10 @@ class _ShowInputScreenState extends State<ShowInputScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       String enteredText = _controller.text;
-                      // PipWrapper.showUrl(context, enteredText);
-                      Navigator.pushNamed(
+                      MyPipUrlApp.openPlayer(
                         context,
-                        WebViewScreen.routeName,
-                        arguments: WebViewScreenArguments(
-                          settings.webViewUrl,
-                          enteredText,
-                        ),
+                        settings.webViewUrl,
+                        enteredText,
                       );
                     }
                   },

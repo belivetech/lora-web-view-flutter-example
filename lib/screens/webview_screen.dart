@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:lora_web_view/main.dart';
 import 'package:lora_web_view/screens/product_detail_screen.dart';
 import 'package:lora_web_view/widgets/my_pip_webview.dart';
@@ -134,35 +133,72 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Future activePip(BuildContext context) async {
-    PictureInPicture.updatePiPParams(
-        pipParams: const PiPParams(
-      pipWindowHeight: 250,
-      pipWindowWidth: 150,
-    ));
-    PictureInPicture.startPiP(
-      pipWidget: Builder(builder: (context) {
-        return PiPWidget(
-          onPiPClose: () {},
-          child: MyPiPWebView(
-            url: widget.url,
-            showId: widget.showId,
-            onExpanded: () {
-              navigatorKey.currentState?.pushNamed(
-                WebViewScreen.routeName,
-                arguments: WebViewScreenArguments(
-                  widget.url,
-                  widget.showId,
-                ),
-              );
-              // Navigator.of(context)
-              //     .pushNamed('product_detail');
-              PictureInPicture.stopPiP();
-            },
-          ),
-        );
-      }),
-    );
     Navigator.pop(context);
+    // await Future.delayed(const Duration(milliseconds: 200));
+    // PIPView.of(context)?.setPipClick(() {
+    //   PIPView.of(navigatorKey.currentContext!)?.stopFloating();
+    //   navigatorKey.currentState?.pushNamed(
+    //     WebViewScreen.routeName,
+    //     arguments: WebViewScreenArguments(
+    //       widget.url,
+    //       widget.showId,
+    //     ),
+    //   );
+    //   // Navigator.of(context)
+    //   //     .pushNamed('product_detail');
+    // });
+    // PIPView.of(context)!.present(
+    //     MyPiPWebView(
+    //         url: widget.url,
+    //         showId: widget.showId,
+    //         onExpanded: () {
+    //           navigatorKey.currentState?.pushNamed(
+    //             WebViewScreen.routeName,
+    //             arguments: WebViewScreenArguments(
+    //               widget.url,
+    //               widget.showId,
+    //             ),
+    //           );
+    //           // Navigator.of(context)
+    //           //     .pushNamed('product_detail');
+    //           PIPView.of(context)?.stopFloating();
+    //         }),
+    //     initialWidgetSize: const Size(280, 320));
+    // PIPView.of(context)!.present(Scaffold(
+    //   body: Column(
+    //     children: [
+    //       Text('Floating'),
+    //     ],
+    //   ),
+    // ));
+    // PictureInPicture.updatePiPParams(
+    //     pipParams: const PiPParams(
+    //   pipWindowHeight: 250,
+    //   pipWindowWidth: 150,
+    // ));
+    // PictureInPicture.startPiP(
+    //   pipWidget: Builder(builder: (context) {
+    //     return PiPWidget(
+    //       onPiPClose: () {},
+    //       child: MyPiPWebView(
+    //         url: widget.url,
+    //         showId: widget.showId,
+    //         onExpanded: () {
+    //           navigatorKey.currentState?.pushNamed(
+    //             WebViewScreen.routeName,
+    //             arguments: WebViewScreenArguments(
+    //               widget.url,
+    //               widget.showId,
+    //             ),
+    //           );
+    //           // Navigator.of(context)
+    //           //     .pushNamed('product_detail');
+    //           PictureInPicture.stopPiP();
+    //         },
+    //       ),
+    //     );
+    //   }),
+    // );
   }
 
   void showBottomSheet(String title, String content) {

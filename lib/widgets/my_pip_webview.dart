@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:lora_web_view/screens/webview_screen.dart';
 
 class MyPiPWebView extends StatefulWidget {
@@ -30,24 +29,31 @@ class _MyWebViewState extends State<MyPiPWebView> {
             showId: widget.showId,
             isMinimized: true,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () {
-                  PictureInPicture.stopPiP();
-                },
-                icon: const Icon(Icons.close),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              color: Colors.red,
+              height: 60,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.close),
+                  ),
+                  Builder(builder: (context) {
+                    return IconButton(
+                      onPressed: () async {
+                        widget.onExpanded();
+                      },
+                      icon: const Icon(Icons.expand),
+                    );
+                  })
+                ],
               ),
-              Builder(builder: (context) {
-                return IconButton(
-                  onPressed: () async {
-                    widget.onExpanded();
-                  },
-                  icon: const Icon(Icons.expand),
-                );
-              })
-            ],
+            ),
           ),
         ],
       ),
