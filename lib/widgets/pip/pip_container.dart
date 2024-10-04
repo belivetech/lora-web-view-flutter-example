@@ -33,11 +33,11 @@ class PipController {
 class PipContainer extends StatefulWidget {
   const PipContainer({
     super.key,
-    required this.content,
+    this.content,
     required this.controller,
     required this.pipStateBuilder,
   });
-  final Widget content;
+  final Widget? content;
   final PipController controller;
   final PipStateBuilder pipStateBuilder;
   @override
@@ -78,7 +78,7 @@ class _PipContainerState extends State<PipContainer> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        widget.content,
+        if (widget.content != null) widget.content!,
         _buildBubble(context),
       ],
     );
@@ -98,8 +98,11 @@ class _PipContainerState extends State<PipContainer> {
   }
 
   Widget _buildDraggableWidget(BuildContext context, Widget child) {
+    double ratio = .4;
+    double screenWidth = MediaQuery.sizeOf(context).width;
+    double screenHeight = MediaQuery.sizeOf(context).height;
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 50),
       top: topY,
       left: leftX,
       child: GestureDetector(
@@ -114,8 +117,8 @@ class _PipContainerState extends State<PipContainer> {
           });
         },
         child: SizedBox(
-          width: 180,
-          height: 320,
+          width: screenWidth * ratio,
+          height: screenHeight * ratio,
           child: child,
         ),
       ),
