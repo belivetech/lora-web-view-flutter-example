@@ -133,10 +133,25 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
           }
         },
       );
+
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
       (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+        ..setMediaPlaybackRequiresUserGesture(false)
+        ..setCustomWidgetCallbacks(
+          onShowCustomWidget:
+              (Widget widget, OnHideCustomWidgetCallback callback) {
+            navigatorKey.currentState!.push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) => widget,
+                fullscreenDialog: true,
+              ),
+            );
+          },
+          onHideCustomWidget: () {
+            navigatorKey.currentState!.pop();
+          },
+        );
     }
     _controller = controller;
   }
