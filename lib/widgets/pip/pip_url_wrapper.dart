@@ -52,17 +52,18 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
   void openPlayer(String url, String showId) {
     _url = url;
     _showId = showId;
-    _controller.loadRequest(Uri.parse(_url));
+    _controller.loadRequest(Uri.parse(
+        'https://debug.ivsdemos.com/?url=https://fcc3ddae59ed.us-west-2.playback.live-video.net/api/video/v1/us-west-2.893648527354.channel.DmumNckWFTqz.m3u8&p=vjs&d=&l='));
     pipController.full();
   }
 
   void minimize() {
-    runJavaScript('window.player.minimize()');
+    //runJavaScript('window.player.minimize()');
     pipController.minimize();
   }
 
   void unminimize() {
-    runJavaScript('window.player.unminimize()');
+    //runJavaScript('window.player.unminimize()');
     pipController.full();
   }
 
@@ -90,7 +91,11 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
-        NavigationDelegate(),
+        NavigationDelegate(
+          onPageFinished: (String _) {
+            minimize();
+          },
+        ),
       )
       ..addJavaScriptChannel(
         'LoraChannel',
@@ -216,7 +221,7 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
                           ),
                           IconButton(
                             onPressed: () {
-                              runJavaScript('window.player.unminimize()');
+                              //runJavaScript('window.player.unminimize()');
                               pipController.full();
                             },
                             icon: const Icon(
