@@ -2,91 +2,97 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>LORA Example</title>
-
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover"
+		/>
+		<title>LORA Sample App</title>
 		<style>
-			/* Default for mobile screen */
-			#embed-lora-show {
-				width: 300px;
-				margin-top: 16px;
-				background-color: black;
-			}
-			/* For sreen size from 768px and up */
-			@media screen and (min-width: 768px) {
-				#embed-lora-show {
-					width: 400px;
-				}
-			}
-
-			/* For sreen size from 1024px and up */
-			@media screen and (min-width: 1024px) {
-				#embed-lora-show {
-					width: 500px;
-				}
-			}
-
-			.mt-4 {
-				margin-top: 16px;
+			body {
+				font-family: "Arial", sans-serif;
+				background-color: #f4f4f4;
+				margin: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
 			}
 		</style>
 	</head>
+
 	<body>
-		<!-- <button id="btn-lora-show">Watch live</button>
-
-		<div id="embed-lora-show"></div> -->
-
-		<div class="mt-4">
-			<story-block-playlist
-				playlist-id="42c5a83c-fb1d-4ba5-4cbe-08daaaab64a7"
-				item-per-row="3"
-			></story-block-playlist>
-		</div>
-
-		<div class="mt-4">
-			<carousel-playlist
-				playlist-id="dd630806-2ac9-4e2d-4cbb-08daaaab64a7"
-				item-per-row-mobile="2.2"
-			></carousel-playlist>
-		</div>
-
-		<div class="mt-4">
-			<grid-playlist
-				playlist-id="b95f731f-57cf-4f1e-4cbc-08daaaab64a7"
-			></grid-playlist>
-		</div>
-
-		<script
-			type="text/javascript"
-			src="https://lora-sdk.belive.sg/embed-js/latest/lora-embed.js"
-		></script>
-
-		<!-- <script>
-			var scriptElement = document.createElement("script");
-			scriptElement.src =
-				"https://lora-sdk.belive.sg/player-widget/latest/player.min.js";
-			scriptElement.onload = function () {
-				window.BeLivePlayerWidget.initialize({
-					showId: "b5ed4b45-9d2f-4f92-aabd-992fb189c0ff",
-					triggerElement: document.getElementById("btn-lora-show"),
+		<script src="https://lora-sdk.belive.sg/player-widget/staging/player.min.js"></script>
+		<script>
+			var player;
+			window.addEventListener("flutterInAppWebViewPlatformReady", function () {
+				player = window.BeLivePlayerWidget.initialize({
+					navigationMode: window.BeLivePlayerWidget.NavigationMode.MANUAL,
+					buttons: {
+						minimize: window.BeLivePlayerWidget.Button.NONE,
+						product: window.BeLivePlayerWidget.Button.NONE,
+					},
+					ui: {
+						hideShareView: true,
+					},
 				});
-				window.BeLivePlayerWidget.initialize({
-					showId: "b5ed4b45-9d2f-4f92-aabd-992fb189c0ff",
-					container: document.getElementById("embed-lora-show"),
+
+				player.on(window.BeLivePlayerWidget.PlayerEventType.READY, () => {
+					postMessage({
+						eventName: "player.READY",
+					});
 				});
-				try {
-					console.log(
-						"window",
-						JSON.stringify({
-							location: window.location,
-							origin: window.origin,
-						})
+
+				player.on(window.BeLivePlayerWidget.PlayerEventType.CLOSE, () => {
+					postMessage({
+						eventName: "player.CLOSE",
+					});
+				});
+
+				player.on(
+					window.BeLivePlayerWidget.PlayerEventType.SHOW_PRODUCT_VIEW,
+					(payload) => {
+						postMessage({
+							eventName: "player.SHOW_PRODUCT_VIEW",
+							payload,
+						});
+					}
+				);
+
+				player.on(
+					window.BeLivePlayerWidget.PlayerEventType.SHOW_SHARE_VIEW,
+					(payload) => {
+						postMessage({
+							eventName: "player.SHOW_SHARE_VIEW",
+							payload,
+						});
+					}
+				);
+
+				player.on(window.BeLivePlayerWidget.PlayerEventType.MINIMIZED, () => {
+					postMessage({
+						eventName: "player.MINIMIZED",
+					});
+				});
+
+				player.on(window.BeLivePlayerWidget.PlayerEventType.UNMINIMIZED, () => {
+					postMessage({
+						eventName: "player.UNMINIMIZED",
+					});
+				});
+
+				postMessage({
+					eventName: "player.INITIALIZE",
+				});
+			});
+
+			function postMessage(data) {
+				if (window.flutter_inappwebview.callHandler) {
+					window.flutter_inappwebview.callHandler(
+						"LoraChannel",
+						JSON.stringify(data)
 					);
-				} catch (error) {
-					console.error(error);
 				}
-			};
-			document.body.appendChild(scriptElement);
-		</script> -->
+			}
+		</script>
 	</body>
 </html>

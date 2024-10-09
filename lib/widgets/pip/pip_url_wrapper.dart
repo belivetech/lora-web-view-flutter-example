@@ -1,12 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:lora_web_view/main.dart';
 import 'package:lora_web_view/screens/product_detail_screen.dart';
 import 'package:lora_web_view/widgets/pip/pip_container.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class PipUrlWrapper extends StatefulWidget {
   const PipUrlWrapper({super.key, this.child});
@@ -30,16 +28,25 @@ class PipUrlWrapper extends StatefulWidget {
 }
 
 class _PipUrlWrapperState extends State<PipUrlWrapper> {
+  final GlobalKey webViewKey = GlobalKey();
   final PipController pipController = PipController();
-  late final WebViewController _controller;
+  final InAppWebViewSettings settings = InAppWebViewSettings(
+    isInspectable: true,
+    mediaPlaybackRequiresUserGesture: false,
+    allowsInlineMediaPlayback: true,
+    iframeAllow: "camera; microphone",
+    iframeAllowFullscreen: true,
+    allowBackgroundAudioPlaying: false,
+  );
+
   Widget? _bottomSheet;
-  String _url = "";
+  String _url = "about:blank";
   String _showId = "";
+  InAppWebViewController? _controller;
 
   @override
   void initState() {
     super.initState();
-    initWebController();
   }
 
   @override
@@ -49,10 +56,11 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
     super.dispose();
   }
 
-  void openPlayer(String url, String showId) {
-    _url = url;
-    _showId = showId;
-    _controller.loadRequest(Uri.parse(_url));
+  void openPlayer(String url, String showId) async {
+    setState(() {
+      _url = url;
+      _showId = showId;
+    });
     pipController.full();
   }
 
@@ -67,78 +75,56 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
   }
 
   void close() {
-    _controller.loadRequest(Uri.parse("about:blank"));
     pipController.close();
   }
 
-  Future<void> runJavaScript(String javascript) {
-    return _controller.runJavaScript(javascript);
+  void runJavaScript(String javascript) {
+    _controller?.evaluateJavascript(source: javascript);
   }
 
-  void initWebController() {
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(),
-      )
-      ..addJavaScriptChannel(
-        'LoraChannel',
-        onMessageReceived: (JavaScriptMessage message) async {
-          Map<String, dynamic> jsonMap = json.decode(message.message);
-          final payload = jsonMap.containsKey('payload')
-              ? jsonMap['payload'] as Map<String, dynamic>
-              : null;
-
-          switch (jsonMap['eventName'] as String) {
-            case 'player.INITIALIZE':
-              runJavaScript('window.player.open("$_showId")');
-              break;
-            case 'player.READY':
-              debugPrint('player.READY');
-              break;
-            case 'player.SHOW_PRODUCT_VIEW':
-              debugPrint(message.message);
-              minimize();
-              navigatorKey.currentState?.pushNamed(
-                ProductDetailScreen.routeName,
-                arguments: ProductDetailScreenArguments(
-                  sku: payload?['sku'] ?? "null",
-                  title: payload?['name'] as String,
-                  description: json.encode(payload),
-                ),
-              );
-
-              break;
-            case 'player.MINIMIZED':
-              minimize();
-              break;
-            case 'player.CLOSE':
-              close();
-              break;
-            case 'player.SHOW_SHARE_VIEW':
-              showBottomSheet('Share title',
-                  'Share view Content share view... ${message.message}');
-              break;
-          }
-        },
-      );
-    if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
-    }
+  void initWebController(InAppWebViewController controller) {
     _controller = controller;
+    _controller?.addJavaScriptHandler(
+      handlerName: 'LoraChannel',
+      callback: (args) {
+        final message = args[0] as String;
+        Map<String, dynamic> jsonMap = json.decode(message);
+        final payload = jsonMap.containsKey('payload')
+            ? jsonMap['payload'] as Map<String, dynamic>
+            : null;
+
+        switch (jsonMap['eventName'] as String) {
+          case 'player.INITIALIZE':
+            runJavaScript('window.player.open("$_showId")');
+            break;
+          case 'player.READY':
+            debugPrint('player.READY');
+            break;
+          case 'player.SHOW_PRODUCT_VIEW':
+            debugPrint(message);
+            minimize();
+            navigatorKey.currentState?.pushNamed(
+              ProductDetailScreen.routeName,
+              arguments: ProductDetailScreenArguments(
+                sku: payload?['sku'] ?? "null",
+                title: payload?['name'] as String,
+                description: json.encode(payload),
+              ),
+            );
+            break;
+          case 'player.MINIMIZED':
+            minimize();
+            break;
+          case 'player.CLOSE':
+            close();
+            break;
+          case 'player.SHOW_SHARE_VIEW':
+            showBottomSheet(
+                'Share title', 'Share view Content share view... $message');
+            break;
+        }
+      },
+    );
   }
 
   void showMessage(message) {
@@ -200,32 +186,7 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
                 return Stack(
                   children: [
                     _buildWebView(context),
-                    Positioned(
-                      right: 0,
-                      top: 16,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              close();
-                            },
-                            icon: const Icon(
-                              Icons.close,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              runJavaScript('window.player.unminimize()');
-                              pipController.full();
-                            },
-                            icon: const Icon(
-                              Icons.expand,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildPipActions(context),
                   ],
                 );
 
@@ -236,10 +197,59 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
     );
   }
 
+  Widget _buildPipActions(BuildContext context) {
+    return Positioned(
+      right: 0,
+      top: 16,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () {
+              close();
+            },
+            icon: const Icon(
+              Icons.close,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              runJavaScript('window.player.unminimize()');
+              pipController.full();
+            },
+            icon: const Icon(
+              Icons.expand,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildWebView(BuildContext context) {
     return SafeArea(
-      child: WebViewWidget(
-        controller: _controller,
+      child: InAppWebView(
+        key: webViewKey,
+        initialUrlRequest: URLRequest(url: WebUri(_url)),
+        initialSettings: settings,
+        onWebViewCreated: (controller) {
+          initWebController(controller);
+        },
+        onLoadStart: (controller, url) {
+          debugPrint('onLoadStart: $url');
+        },
+        onPermissionRequest: (controller, request) async {
+          return PermissionResponse(
+            resources: request.resources,
+            action: PermissionResponseAction.GRANT,
+          );
+        },
+        onReceivedError: (controller, request, error) {
+          debugPrint('onReceivedError: $error');
+        },
+        onConsoleMessage: (controller, consoleMessage) {
+          debugPrint(consoleMessage.message);
+        },
       ),
     );
   }
