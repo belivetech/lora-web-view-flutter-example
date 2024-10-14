@@ -43,6 +43,7 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
   String _url = "about:blank";
   String _showId = "";
   InAppWebViewController? _controller;
+  bool _isPlayerReady = false;
 
   @override
   void initState() {
@@ -95,6 +96,7 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
 
         switch (jsonMap['eventName'] as String) {
           case 'player.INITIALIZE':
+            _isPlayerReady = true;
             runJavaScript('window.player.open("$_showId")');
             break;
           case 'player.READY':
@@ -234,6 +236,12 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
         initialSettings: settings,
         onWebViewCreated: (controller) {
           initWebController(controller);
+        },
+        onEnterFullscreen: (controller) {
+          controller.clearFocus();
+        },
+        onExitFullscreen: (controller) {
+          controller.clearFocus();
         },
         onLoadStart: (controller, url) {
           debugPrint('onLoadStart: $url');
