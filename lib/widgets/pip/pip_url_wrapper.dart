@@ -58,6 +58,10 @@ class _PipUrlWrapperState extends State<PipUrlWrapper> {
   }
 
   void openPlayer(String url, String showId) async {
+    if (_isPlayerReady && showId != _showId) {
+      runJavaScript('window.player.unminimize()');
+      runJavaScript('window.player.open("$showId")');
+    }
     setState(() {
       _url = url;
       _showId = showId;
